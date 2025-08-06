@@ -1,0 +1,267 @@
+{% extends 'base.html' %}
+
+{% block title %}Import Structure - {{ project.name }}{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.name }}</a></li>
+                <li class="breadcrumb-item active">Import Structure</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-upload me-2"></i>Import Folder Structure
+                </h5>
+            </div>
+            <div class="card-body">
+                <div class="alert alert-info">
+                    <i class="fas fa-info-circle me-2"></i>
+                    <strong>Import Instructions:</strong>
+                    <ul class="mb-0 mt-2">
+                        <li>Select a JSON file that was previously exported from this application</li>
+                        <li>The file should contain a valid folder structure definition</li>
+                        <li>The imported structure will be added as a new structure for this project</li>
+                    </ul>
+                </div>
+                
+                <form method="post" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="structure_file" class="form-label">
+                            <i class="fas fa-file-import me-1"></i>JSON Structure File <span class="text-danger">*</span>
+                        </label>
+                        <input type="file" 
+                               class="form-control" 
+                               id="structure_file" 
+                               name="structure_file" 
+                               accept=".json"
+                               required>
+                        <div class="form-text">Select a JSON file containing the folder structure definition.</div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="custom_name" class="form-label">
+                            <i class="fas fa-tag me-1"></i>Custom Name (Optional)
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="custom_name" 
+                               name="name" 
+                               placeholder="Leave empty to use the name from the file">
+                        <div class="form-text">Override the structure name from the imported file.</div>
+                    </div>
+                    
+                    <!-- File Preview Area -->
+                    <div id="filePreview" class="mb-3" style="display: none;">
+                        <label class="form-label">File Preview</label>
+                        <div class="border rounded p-3 bg-light">
+                            <div id="previewContent"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'project_detail' project.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-success" id="importBtn" disabled>
+                            <i class="fas fa-upload me-1"></i>Import Structure
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-question-circle me-2"></i>Help</h6>
+            </div>
+            <div class="card-body">
+                <h6>Supported File Format</h6>
+                <p class="small">The JSON file should have the following structure:</p>
+                <pre class="small bg-light p-2 rounded"><code>{
+  "project": {
+    "name": "Project Name",
+    "client": "Client Name"
+  },
+  "structure": {
+    "name": "Structure Name",
+    "data": [
+      {
+        "name": "folder1",
+        "children": [
+          {
+            "name": "subfolder1",
+            "children": []
+          }
+        ]
+      }
+    ]
+  }
+}</code></pre>
+                
+                <h6 class="mt-3">Tips</h6>
+                <ul class="small">
+                    <li>Only JSON files are accepted</li>
+                    <li>File size should be less than 10MB</li>
+                    <li>Structure will be validated before import</li>
+                    <li>Duplicate names will be automatically handled</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    $('#structure_file').on('change', function() {
+        const file = this.files[0];
+        const importBtn = $('#importBtn');
+        const filePreview = $('#filePreview');
+        const previewContent = $('#previewContent');
+        
+        if (file) {
+            // Validate file type
+            if (!file.name.toLowerCase().endsWith('.json')) {
+                showAlert('Please select a JSON file.', 'error');
+                importBtn.prop('disabled', true);
+                filePreview.hide();
+                return;
+            }
+            
+            // Validate file size (10MB limit)
+            if (file.size > 10 * 1024 * 1024) {
+                showAlert('File size must be less than 10MB.', 'error');
+                importBtn.prop('disabled', true);
+                filePreview.hide();
+                return;
+            }
+            
+            // Read and preview file
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const jsonData = JSON.parse(e.target.result);
+                    
+                    // Validate JSON structure
+                    if (!jsonData.structure || !jsonData.structure.data) {
+                        throw new Error('Invalid JSON structure format');
+                    }
+                    
+                    // Show preview
+                    let previewHtml = '<strong>File Information:</strong><br>';
+                    previewHtml += `<strong>File Name:</strong> ${file.name}<br>`;
+                    previewHtml += `<strong>File Size:</strong> ${formatFileSize(file.size)}<br>`;
+                    
+                    if (jsonData.project) {
+                        previewHtml += `<strong>Original Project:</strong> ${jsonData.project.name || 'Unknown'}<br>`;
+                        previewHtml += `<strong>Original Client:</strong> ${jsonData.project.client || 'Unknown'}<br>`;
+                    }
+                    
+                    if (jsonData.structure) {
+                        previewHtml += `<strong>Structure Name:</strong> ${jsonData.structure.name || 'Unknown'}<br>`;
+                        previewHtml += `<strong>Folder Count:</strong> ${countFolders(jsonData.structure.data)}<br>`;
+                    }
+                    
+                    previewHtml += '<br><strong>Structure Preview:</strong><br>';
+                    previewHtml += '<div class="font-monospace small">';
+                    previewHtml += renderStructurePreview(jsonData.structure.data);
+                    previewHtml += '</div>';
+                    
+                    previewContent.html(previewHtml);
+                    filePreview.show();
+                    importBtn.prop('disabled', false);
+                    
+                    // Auto-fill custom name if empty
+                    if (!$('#custom_name').val() && jsonData.structure.name) {
+                        $('#custom_name').val(jsonData.structure.name + ' (Imported)');
+                    }
+                    
+                } catch (error) {
+                    showAlert('Invalid JSON file format: ' + error.message, 'error');
+                    importBtn.prop('disabled', true);
+                    filePreview.hide();
+                }
+            };
+            
+            reader.onerror = function() {
+                showAlert('Error reading file.', 'error');
+                importBtn.prop('disabled', true);
+                filePreview.hide();
+            };
+            
+            reader.readAsText(file);
+        } else {
+            importBtn.prop('disabled', true);
+            filePreview.hide();
+        }
+    });
+    
+    // Form submission with loading state
+    $('#importForm').on('submit', function() {
+        const importBtn = $('#importBtn');
+        importBtn.prop('disabled', true);
+        importBtn.html('<i class="fas fa-spinner fa-spin me-1"></i>Importing...');
+    });
+    
+    function countFolders(structure) {
+        let count = 0;
+        structure.forEach(item => {
+            count++;
+            if (item.children && item.children.length > 0) {
+                count += countFolders(item.children);
+            }
+        });
+        return count;
+    }
+    
+    function renderStructurePreview(structure, indent = 0) {
+        let html = '';
+        structure.forEach(item => {
+            html += '&nbsp;'.repeat(indent * 4) + '📁 ' + item.name + '<br>';
+            if (item.children && item.children.length > 0) {
+                html += renderStructurePreview(item.children, indent + 1);
+            }
+        });
+        return html;
+    }
+    
+    function formatFileSize(bytes) {
+        if (bytes === 0) return '0 Bytes';
+        const k = 1024;
+        const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+        const i = Math.floor(Math.log(bytes) / Math.log(k));
+        return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+    }
+    
+    function showAlert(message, type) {
+        const alertClass = type === 'error' ? 'danger' : type;
+        const alertHtml = `<div class="alert alert-${alertClass} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        
+        $('.container-fluid').prepend(alertHtml);
+        
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 5000);
+    }
+});
+</script>
+{% endblock %}

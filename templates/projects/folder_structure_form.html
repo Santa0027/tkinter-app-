@@ -1,0 +1,366 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if folder_structure %}Edit Structure{% else %}New Structure{% endif %} - {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.folder-structure-editor {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    min-height: 400px;
+}
+
+.folder-item {
+    padding: 0.25rem 0;
+    cursor: pointer;
+    border-radius: 4px;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.folder-item:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+}
+
+.folder-item.selected {
+    background-color: rgba(13, 110, 253, 0.2);
+}
+
+.predefined-preview {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.folder-controls {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.name }}</a></li>
+                <li class="breadcrumb-item active">{% if folder_structure %}Edit Structure{% else %}New Structure{% endif %}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-folder-tree me-2"></i>
+                    {% if folder_structure %}Edit Structure{% else %}Create Folder Structure{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post" id="structureForm">
+                    {% csrf_token %}
+                    
+                    <div class="mb-3">
+                        <label for="name" class="form-label">
+                            <i class="fas fa-tag me-1"></i>Structure Name <span class="text-danger">*</span>
+                        </label>
+                        <input type="text" 
+                               class="form-control" 
+                               id="name" 
+                               name="name" 
+                               value="{% if folder_structure %}{{ folder_structure.name }}{% else %}Main Structure{% endif %}"
+                               placeholder="Enter structure name"
+                               required>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">
+                            <i class="fas fa-folder-tree me-1"></i>Folder Structure
+                        </label>
+                        <div class="folder-structure-editor" id="folderEditor">
+                            {% if folder_structure %}
+                                {% for item in folder_structure.get_structure_as_dict %}
+                                    {{ item.name }}
+                                    {% for child in item.children %}
+                                        &nbsp;&nbsp;&nbsp;&nbsp;{{ child.name }}
+                                        {% for subchild in child.children %}
+                                            &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;{{ subchild.name }}
+                                        {% endfor %}
+                                    {% endfor %}
+                                {% endfor %}
+                            {% else %}
+                                Click "Load Template" to start with a predefined structure or use the controls below to build your own.
+                            {% endif %}
+                        </div>
+                        <textarea name="structure_data" id="structureData" style="display: none;">
+                            {% if folder_structure %}{{ folder_structure.structure_data|safe }}{% else %}[]{% endif %}
+                        </textarea>
+                    </div>
+                    
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% url 'project_detail' project.id %}" class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-{% if folder_structure %}warning{% else %}success{% endif %}">
+                            <i class="fas fa-{% if folder_structure %}save{% else %}plus{% endif %} me-1"></i>
+                            {% if folder_structure %}Update Structure{% else %}Create Structure{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <!-- Predefined Templates -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-templates me-2"></i>Templates</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <select class="form-select" id="predefinedSelect">
+                        <option value="">Select a template</option>
+                        {% for structure in predefined_structures %}
+                            <option value="{{ structure.id }}" data-structure="{{ structure.structure_data|safe }}">
+                                {{ structure.name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <button type="button" class="btn btn-outline-primary w-100" id="loadTemplate">
+                    <i class="fas fa-download me-1"></i>Load Template
+                </button>
+                
+                <div id="templatePreview" class="predefined-preview mt-3" style="display: none;">
+                    <strong>Preview:</strong>
+                    <div id="previewContent"></div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Folder Controls -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Folder Controls</h6>
+            </div>
+            <div class="card-body folder-controls">
+                <div class="mb-3">
+                    <label for="folderName" class="form-label">Folder Name</label>
+                    <input type="text" class="form-control" id="folderName" placeholder="Enter folder name">
+                </div>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-success btn-sm" id="addFolder">
+                        <i class="fas fa-plus me-1"></i>Add Folder
+                    </button>
+                    <button type="button" class="btn btn-outline-info btn-sm" id="addSubfolder">
+                        <i class="fas fa-level-down-alt me-1"></i>Add Subfolder
+                    </button>
+                    <button type="button" class="btn btn-outline-warning btn-sm" id="renameFolder">
+                        <i class="fas fa-edit me-1"></i>Rename Selected
+                    </button>
+                    <button type="button" class="btn btn-outline-danger btn-sm" id="deleteFolder">
+                        <i class="fas fa-trash me-1"></i>Delete Selected
+                    </button>
+                </div>
+                
+                <hr>
+                
+                <div class="d-grid gap-2">
+                    <button type="button" class="btn btn-outline-secondary btn-sm" id="clearAll">
+                        <i class="fas fa-eraser me-1"></i>Clear All
+                    </button>
+                    <button type="button" class="btn btn-outline-primary btn-sm" id="validateStructure">
+                        <i class="fas fa-check me-1"></i>Validate
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    let currentStructure = {% if folder_structure %}{{ folder_structure.structure_data|safe }}{% else %}[]{% endif %};
+    let selectedFolder = null;
+    
+    // Initialize editor
+    updateEditor();
+    
+    // Template selection preview
+    $('#predefinedSelect').on('change', function() {
+        const selectedOption = $(this).find('option:selected');
+        const structureData = selectedOption.data('structure');
+        
+        if (structureData) {
+            $('#templatePreview').show();
+            $('#previewContent').html(renderStructurePreview(structureData));
+        } else {
+            $('#templatePreview').hide();
+        }
+    });
+    
+    // Load template
+    $('#loadTemplate').on('click', function() {
+        const selectedOption = $('#predefinedSelect').find('option:selected');
+        const structureData = selectedOption.data('structure');
+        
+        if (structureData) {
+            currentStructure = structureData;
+            updateEditor();
+            showAlert('Template loaded successfully!', 'success');
+        } else {
+            showAlert('Please select a template first.', 'warning');
+        }
+    });
+    
+    // Folder controls
+    $('#addFolder').on('click', function() {
+        const folderName = $('#folderName').val().trim();
+        if (!folderName) {
+            showAlert('Please enter a folder name.', 'warning');
+            return;
+        }
+        
+        currentStructure.push({
+            name: folderName,
+            children: []
+        });
+        
+        updateEditor();
+        $('#folderName').val('');
+        showAlert('Folder added successfully!', 'success');
+    });
+    
+    $('#addSubfolder').on('click', function() {
+        const folderName = $('#folderName').val().trim();
+        if (!folderName) {
+            showAlert('Please enter a folder name.', 'warning');
+            return;
+        }
+        
+        if (!selectedFolder) {
+            showAlert('Please select a parent folder first.', 'warning');
+            return;
+        }
+        
+        // Add subfolder to selected folder
+        addSubfolderToSelected(currentStructure, selectedFolder, folderName);
+        updateEditor();
+        $('#folderName').val('');
+        showAlert('Subfolder added successfully!', 'success');
+    });
+    
+    $('#clearAll').on('click', function() {
+        if (confirm('Are you sure you want to clear all folders?')) {
+            currentStructure = [];
+            selectedFolder = null;
+            updateEditor();
+            showAlert('All folders cleared.', 'info');
+        }
+    });
+    
+    $('#validateStructure').on('click', function() {
+        if (currentStructure.length === 0) {
+            showAlert('Structure is empty.', 'warning');
+        } else {
+            showAlert('Structure is valid!', 'success');
+        }
+    });
+    
+    // Form submission
+    $('#structureForm').on('submit', function(e) {
+        $('#structureData').val(JSON.stringify(currentStructure));
+    });
+    
+    function updateEditor() {
+        const editorHtml = renderStructureEditor(currentStructure);
+        $('#folderEditor').html(editorHtml);
+        
+        // Add click handlers for folder selection
+        $('.folder-item').on('click', function() {
+            $('.folder-item').removeClass('selected');
+            $(this).addClass('selected');
+            selectedFolder = $(this).data('path');
+        });
+    }
+    
+    function renderStructureEditor(structure, indent = 0) {
+        let html = '';
+        structure.forEach((item, index) => {
+            const path = `${indent}-${index}`;
+            html += `<div class="folder-item" data-path="${path}" style="padding-left: ${indent * 20}px;">`;
+            html += `<i class="fas fa-folder me-1"></i>${item.name}`;
+            html += `</div>`;
+            if (item.children && item.children.length > 0) {
+                html += renderStructureEditor(item.children, indent + 1);
+            }
+        });
+        return html || '<div class="text-muted">No folders yet. Add some folders using the controls.</div>';
+    }
+    
+    function renderStructurePreview(structure, indent = 0) {
+        let html = '';
+        structure.forEach(item => {
+            html += `<div style="padding-left: ${indent * 20}px;">`;
+            html += `<i class="fas fa-folder me-1"></i>${item.name}`;
+            html += `</div>`;
+            if (item.children && item.children.length > 0) {
+                html += renderStructurePreview(item.children, indent + 1);
+            }
+        });
+        return html;
+    }
+    
+    function addSubfolderToSelected(structure, selectedPath, folderName) {
+        const pathParts = selectedPath.split('-').map(p => parseInt(p));
+        let current = structure;
+        
+        for (let i = 0; i < pathParts.length; i += 2) {
+            const index = pathParts[i + 1];
+            if (i === pathParts.length - 2) {
+                current[index].children.push({
+                    name: folderName,
+                    children: []
+                });
+                break;
+            } else {
+                current = current[index].children;
+            }
+        }
+    }
+    
+    function showAlert(message, type) {
+        const alertHtml = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        
+        $('.container-fluid').prepend(alertHtml);
+        
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

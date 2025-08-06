@@ -1,0 +1,341 @@
+{
+    "Motion Graphics": [
+        {
+            "name": "audio",
+            "children": []
+        },
+        {
+            "name": "out_images",
+            "children": [
+                {
+                    "name": "afterEffects",
+                    "children": []
+                },
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "premierePro",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "out_movies",
+            "children": [
+                {
+                    "name": "afterEffects",
+                    "children": []
+                },
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "premierePro",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "reference",
+            "children": [
+                {
+                    "name": "images",
+                    "children": []
+                },
+                {
+                    "name": "videos",
+                    "children": []
+                },
+                {
+                    "name": "template_files",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "work_file",
+            "children": [
+                {
+                    "name": "afterEffects",
+                    "children": []
+                },
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "premierePro",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "client_Out",
+            "children": []
+        },
+        {
+            "name": "script",
+            "children": []
+        }
+    ],
+    "Graphic Design (Poster/Flyer)": [
+        {
+            "name": "out_images",
+            "children": [
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "Illustrator",
+                    "children": []
+                },
+                {
+                    "name": "CorelDraw",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "reference",
+            "children": [
+                {
+                    "name": "images",
+                    "children": []
+                },
+                {
+                    "name": "template_files",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "work_file",
+            "children": [
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "Illustrator",
+                    "children": []
+                },
+                {
+                    "name": "CorelDraw",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "client_Out",
+            "children": []
+        }
+    ],
+    "main": [
+        {
+            "name": "out_images",
+            "children": [
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "Illustrator",
+                    "children": []
+                },
+                {
+                    "name": "CorelDraw",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "reference",
+            "children": [
+                {
+                    "name": "images",
+                    "children": []
+                },
+                {
+                    "name": "template_files",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "work_file",
+            "children": [
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "Illustrator",
+                    "children": []
+                },
+                {
+                    "name": "CorelDraw",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "client_Out",
+            "children": [
+                {
+                    "name": "123_1",
+                    "children": []
+                },
+                {
+                    "name": "123_2",
+                    "children": []
+                },
+                {
+                    "name": "123_3",
+                    "children": []
+                },
+                {
+                    "name": "123_4",
+                    "children": []
+                },
+                {
+                    "name": "123_5",
+                    "children": []
+                },
+                {
+                    "name": "123_6",
+                    "children": []
+                },
+                {
+                    "name": "123_7",
+                    "children": []
+                },
+                {
+                    "name": "123_8",
+                    "children": []
+                },
+                {
+                    "name": "123_9",
+                    "children": []
+                },
+                {
+                    "name": "123_10",
+                    "children": []
+                },
+                {
+                    "name": "123_11",
+                    "children": []
+                },
+                {
+                    "name": "123_12",
+                    "children": []
+                }
+            ]
+        }
+    ],
+    "main1": [
+        {
+            "name": "out_images",
+            "children": [
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "Illustrator",
+                    "children": []
+                },
+                {
+                    "name": "CorelDraw",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "reference",
+            "children": [
+                {
+                    "name": "images",
+                    "children": []
+                },
+                {
+                    "name": "template_files",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "work_file",
+            "children": [
+                {
+                    "name": "photoshop",
+                    "children": []
+                },
+                {
+                    "name": "Illustrator",
+                    "children": []
+                },
+                {
+                    "name": "CorelDraw",
+                    "children": []
+                }
+            ]
+        },
+        {
+            "name": "client_Out",
+            "children": [
+                {
+                    "name": "123_1",
+                    "children": []
+                },
+                {
+                    "name": "123_2",
+                    "children": []
+                },
+                {
+                    "name": "123_10",
+                    "children": []
+                },
+                {
+                    "name": "123_3",
+                    "children": []
+                },
+                {
+                    "name": "123_4",
+                    "children": []
+                },
+                {
+                    "name": "123_5",
+                    "children": []
+                },
+                {
+                    "name": "123_6",
+                    "children": []
+                },
+                {
+                    "name": "123_7",
+                    "children": []
+                },
+                {
+                    "name": "123_8",
+                    "children": []
+                },
+                {
+                    "name": "123_9",
+                    "children": []
+                },
+                {
+                    "name": "123_11",
+                    "children": []
+                },
+                {
+                    "name": "123_12",
+                    "children": []
+                }
+            ]
+        }
+    ]
+}

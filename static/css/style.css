@@ -1,0 +1,264 @@
+/* Custom CSS for Folder Structure Manager */
+
+:root {
+    --primary-color: #0d6efd;
+    --secondary-color: #6c757d;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+}
+
+/* General Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* Card Styles */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    transition: box-shadow 0.15s ease-in-out;
+}
+
+.card:hover {
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.card-header {
+    background-color: transparent;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.125);
+    font-weight: 600;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+    transition: all 0.15s ease-in-out;
+}
+
+.btn-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+}
+
+/* Table Styles */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    color: var(--dark-color);
+    background-color: var(--light-color);
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(0, 0, 0, 0.025);
+}
+
+/* Badge Styles */
+.badge {
+    font-weight: 500;
+    padding: 0.375rem 0.75rem;
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: 6px;
+    border: 1px solid #ced4da;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+/* Alert Styles */
+.alert {
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+}
+
+/* Statistics Cards */
+.stats-card {
+    background: linear-gradient(135deg, var(--primary-color), #0056b3);
+    color: white;
+    border-radius: 15px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+}
+
+.stats-card .stats-icon {
+    font-size: 2.5rem;
+    opacity: 0.8;
+}
+
+.stats-card .stats-number {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 0;
+}
+
+.stats-card .stats-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+    margin: 0;
+}
+
+/* Folder Structure Styles */
+.folder-structure {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    line-height: 1.4;
+    max-height: 400px;
+    overflow-y: auto;
+}
+
+.folder-structure .folder-item {
+    padding: 0.25rem 0;
+    cursor: pointer;
+    transition: background-color 0.15s ease-in-out;
+}
+
+.folder-structure .folder-item:hover {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-radius: 4px;
+}
+
+.folder-structure .folder-item.selected {
+    background-color: rgba(13, 110, 253, 0.2);
+    border-radius: 4px;
+}
+
+/* Predefined Structure Selector */
+.structure-selector {
+    background-color: white;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    margin-bottom: 1rem;
+}
+
+.structure-preview {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    padding: 0.75rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+    max-height: 200px;
+    overflow-y: auto;
+}
+
+/* Loading Spinner */
+.spinner-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+}
+
+.spinner-border-lg {
+    width: 3rem;
+    height: 3rem;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .card-body {
+        padding: 1rem;
+    }
+    
+    .btn-group-vertical .btn {
+        margin-bottom: 0.5rem;
+    }
+    
+    .table-responsive {
+        font-size: 0.875rem;
+    }
+}
+
+/* Animation Classes */
+.fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.slide-in {
+    animation: slideIn 0.3s ease-in-out;
+}
+
+@keyframes slideIn {
+    from {
+        opacity: 0;
+        transform: translateX(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+/* Custom Scrollbar */
+.custom-scrollbar::-webkit-scrollbar {
+    width: 8px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 4px;
+}
+
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}

@@ -1,9 +1,1 @@
-[
-    {
-        "name": "daily backup",
-        "source": "/home/santhakumar/Documents/app",
-        "destination": "/home/santhakumar/Documents",
-        "interval": 5,
-        "status": "Stopped"
-    }
-]
+[]

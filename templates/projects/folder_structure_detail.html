@@ -1,0 +1,291 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ folder_structure.name }} - {{ project.name }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.folder-tree {
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 1rem;
+    font-family: 'Courier New', monospace;
+    font-size: 0.9rem;
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.folder-item {
+    padding: 0.25rem 0;
+    line-height: 1.4;
+}
+
+.folder-item i {
+    color: #ffc107;
+}
+
+.action-buttons .btn {
+    margin-bottom: 0.5rem;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <nav aria-label="breadcrumb">
+            <ol class="breadcrumb">
+                <li class="breadcrumb-item"><a href="{% url 'dashboard' %}">Dashboard</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_list' %}">Projects</a></li>
+                <li class="breadcrumb-item"><a href="{% url 'project_detail' project.id %}">{{ project.name }}</a></li>
+                <li class="breadcrumb-item active">{{ folder_structure.name }}</li>
+            </ol>
+        </nav>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-folder-tree me-2"></i>{{ folder_structure.name }}
+                </h5>
+                <div>
+                    <a href="{% url 'folder_structure_edit' project.id folder_structure.id %}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <a href="{% url 'duplicate_structure' project.id folder_structure.id %}" class="btn btn-outline-info btn-sm">
+                        <i class="fas fa-copy me-1"></i>Duplicate
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label text-muted">Project</label>
+                            <p class="fw-bold">
+                                <a href="{% url 'project_detail' project.id %}" class="text-decoration-none">
+                                    {{ project.name }}
+                                </a>
+                            </p>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label text-muted">Template Used</label>
+                            <p class="fw-bold">
+                                {% if folder_structure.predefined_structure %}
+                                    <span class="badge bg-info">{{ folder_structure.predefined_structure.name }}</span>
+                                {% else %}
+                                    <span class="text-muted">Custom Structure</span>
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-2">
+                            <label class="form-label text-muted">Status</label>
+                            <p>
+                                {% if folder_structure.is_created %}
+                                    <span class="badge bg-success fs-6">
+                                        <i class="fas fa-check me-1"></i>Created
+                                    </span>
+                                {% else %}
+                                    <span class="badge bg-warning fs-6">
+                                        <i class="fas fa-clock me-1"></i>Not Created
+                                    </span>
+                                {% endif %}
+                            </p>
+                        </div>
+                        <div class="mb-2">
+                            <label class="form-label text-muted">Last Updated</label>
+                            <p class="fw-bold">{{ folder_structure.updated_at|date:"F d, Y g:i A" }}</p>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if folder_structure.created_path %}
+                <div class="mb-3">
+                    <label class="form-label text-muted">Created Path</label>
+                    <p class="fw-bold font-monospace">{{ folder_structure.created_path }}</p>
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Folder Structure</label>
+                    <div class="folder-tree" id="folderTree">
+                        {% for item in structure_tree %}
+                            <div class="folder-item">
+                                <i class="fas fa-folder me-1"></i>{{ item.name }}
+                                {% if item.children %}
+                                    {% for child in item.children %}
+                                        <div class="folder-item" style="padding-left: 20px;">
+                                            <i class="fas fa-folder me-1"></i>{{ child.name }}
+                                            {% if child.children %}
+                                                {% for subchild in child.children %}
+                                                    <div class="folder-item" style="padding-left: 40px;">
+                                                        <i class="fas fa-folder me-1"></i>{{ subchild.name }}
+                                                        {% if subchild.children %}
+                                                            {% for subsubchild in subchild.children %}
+                                                                <div class="folder-item" style="padding-left: 60px;">
+                                                                    <i class="fas fa-folder me-1"></i>{{ subsubchild.name }}
+                                                                </div>
+                                                            {% endfor %}
+                                                        {% endif %}
+                                                    </div>
+                                                {% endfor %}
+                                            {% endif %}
+                                        </div>
+                                    {% endfor %}
+                                {% endif %}
+                            </div>
+                        {% empty %}
+                            <div class="text-muted">No folder structure defined.</div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-tools me-2"></i>Actions</h6>
+            </div>
+            <div class="card-body action-buttons">
+                {% if not folder_structure.is_created %}
+                    <form method="post" action="{% url 'create_physical_folders' project.id folder_structure.id %}" class="d-grid mb-2">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-success" onclick="return confirm('This will create the actual folder structure on the file system. Continue?')">
+                            <i class="fas fa-folder-plus me-1"></i>Create Physical Folders
+                        </button>
+                    </form>
+                {% else %}
+                    <div class="alert alert-success">
+                        <i class="fas fa-check-circle me-1"></i>
+                        Folders have been created at:<br>
+                        <code>{{ folder_structure.created_path }}</code>
+                    </div>
+                {% endif %}
+                
+                <div class="d-grid gap-2">
+                    <a href="{% url 'download_structure_zip' project.id folder_structure.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-download me-1"></i>Download as ZIP
+                    </a>
+                    
+                    <a href="{% url 'export_structure_json' project.id folder_structure.id %}" class="btn btn-outline-info">
+                        <i class="fas fa-file-export me-1"></i>Export as JSON
+                    </a>
+                    
+                    <a href="{% url 'folder_structure_edit' project.id folder_structure.id %}" class="btn btn-outline-warning">
+                        <i class="fas fa-edit me-1"></i>Edit Structure
+                    </a>
+                    
+                    <a href="{% url 'duplicate_structure' project.id folder_structure.id %}" class="btn btn-outline-info">
+                        <i class="fas fa-copy me-1"></i>Duplicate Structure
+                    </a>
+                </div>
+                
+                <hr>
+                
+                <div class="d-grid">
+                    <button type="button" class="btn btn-outline-secondary" id="copyStructure">
+                        <i class="fas fa-clipboard me-1"></i>Copy Structure Text
+                    </button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Statistics -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-2">
+                    <span>Total Folders</span>
+                    <span class="badge bg-primary" id="folderCount">0</span>
+                </div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Max Depth</span>
+                    <span class="badge bg-info" id="maxDepth">0</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+$(document).ready(function() {
+    // Calculate statistics
+    const folderItems = $('.folder-item');
+    const folderCount = folderItems.length;
+    
+    let maxDepth = 0;
+    folderItems.each(function() {
+        const paddingLeft = parseInt($(this).css('padding-left')) || 0;
+        const depth = Math.floor(paddingLeft / 20) + 1;
+        maxDepth = Math.max(maxDepth, depth);
+    });
+    
+    $('#folderCount').text(folderCount);
+    $('#maxDepth').text(maxDepth);
+    
+    // Copy structure to clipboard
+    $('#copyStructure').on('click', function() {
+        const structureText = $('#folderTree').text().trim();
+        
+        if (navigator.clipboard) {
+            navigator.clipboard.writeText(structureText).then(function() {
+                showAlert('Structure copied to clipboard!', 'success');
+            }).catch(function() {
+                fallbackCopyTextToClipboard(structureText);
+            });
+        } else {
+            fallbackCopyTextToClipboard(structureText);
+        }
+    });
+    
+    function fallbackCopyTextToClipboard(text) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.top = "0";
+        textArea.style.left = "0";
+        textArea.style.position = "fixed";
+        
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        
+        try {
+            const successful = document.execCommand('copy');
+            if (successful) {
+                showAlert('Structure copied to clipboard!', 'success');
+            } else {
+                showAlert('Failed to copy structure.', 'error');
+            }
+        } catch (err) {
+            showAlert('Failed to copy structure.', 'error');
+        }
+        
+        document.body.removeChild(textArea);
+    }
+    
+    function showAlert(message, type) {
+        const alertHtml = `<div class="alert alert-${type} alert-dismissible fade show" role="alert">
+            ${message}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>`;
+        
+        $('.container-fluid').prepend(alertHtml);
+        
+        setTimeout(function() {
+            $('.alert').fadeOut('slow');
+        }, 3000);
+    }
+});
+</script>
+{% endblock %}

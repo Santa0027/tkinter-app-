@@ -1,0 +1,92 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if client %}Edit Client{% else %}New Client{% endif %} - Folder Structure Manager{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if client %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if client %}Edit Client{% else %}New Client{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Client Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       value="{% if client %}{{ client.name }}{% endif %}"
+                                       placeholder="Enter client name"
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="email" class="form-label">
+                                    <i class="fas fa-envelope me-1"></i>Email
+                                </label>
+                                <input type="email" 
+                                       class="form-control" 
+                                       id="email" 
+                                       name="email" 
+                                       value="{% if client %}{{ client.email }}{% endif %}"
+                                       placeholder="Enter email address">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="phone" class="form-label">
+                                    <i class="fas fa-phone me-1"></i>Phone
+                                </label>
+                                <input type="tel" 
+                                       class="form-control" 
+                                       id="phone" 
+                                       name="phone" 
+                                       value="{% if client %}{{ client.phone }}{% endif %}"
+                                       placeholder="Enter phone number">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="address" class="form-label">
+                            <i class="fas fa-map-marker-alt me-1"></i>Address
+                        </label>
+                        <textarea class="form-control" 
+                                  id="address" 
+                                  name="address" 
+                                  rows="3"
+                                  placeholder="Enter client address">{% if client %}{{ client.address }}{% endif %}</textarea>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% if client %}{% url 'client_detail' client.id %}{% else %}{% url 'client_list' %}{% endif %}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-{% if client %}warning{% else %}success{% endif %}">
+                            <i class="fas fa-{% if client %}save{% else %}plus{% endif %} me-1"></i>
+                            {% if client %}Update Client{% else %}Create Client{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

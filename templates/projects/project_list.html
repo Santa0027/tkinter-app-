@@ -1,0 +1,187 @@
+{% extends 'base.html' %}
+
+{% block title %}Projects - Folder Structure Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1><i class="fas fa-project-diagram me-2"></i>Projects</h1>
+            <a href="{% url 'project_create' %}" class="btn btn-success">
+                <i class="fas fa-plus me-1"></i>New Project
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Search and Filters -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <form method="get" class="d-flex">
+            <input type="text" 
+                   class="form-control me-2" 
+                   name="search" 
+                   placeholder="Search projects..." 
+                   value="{{ search_query }}"
+                   id="searchInput">
+            <button type="submit" class="btn btn-outline-primary">
+                <i class="fas fa-search"></i>
+            </button>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <form method="get">
+            {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+            {% if client_filter %}<input type="hidden" name="client" value="{{ client_filter }}">{% endif %}
+            <select name="status" class="form-select" onchange="this.form.submit()">
+                <option value="">All Statuses</option>
+                {% for value, label in status_choices %}
+                    <option value="{{ value }}" {% if status_filter == value %}selected{% endif %}>{{ label }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="col-md-3">
+        <form method="get">
+            {% if search_query %}<input type="hidden" name="search" value="{{ search_query }}">{% endif %}
+            {% if status_filter %}<input type="hidden" name="status" value="{{ status_filter }}">{% endif %}
+            <select name="client" class="form-select" onchange="this.form.submit()">
+                <option value="">All Clients</option>
+                {% for client in clients %}
+                    <option value="{{ client.id }}" {% if client_filter == client.id|stringformat:"s" %}selected{% endif %}>{{ client.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+    </div>
+    <div class="col-md-2">
+        {% if search_query or status_filter or client_filter %}
+            <a href="{% url 'project_list' %}" class="btn btn-outline-secondary w-100">
+                <i class="fas fa-times me-1"></i>Clear
+            </a>
+        {% endif %}
+    </div>
+</div>
+
+<!-- Projects Table -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                {% if page_obj %}
+                    <div class="table-responsive" id="searchResults">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Project Name</th>
+                                    <th>Client</th>
+                                    <th>Status</th>
+                                    <th>Structures</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for project in page_obj %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'project_detail' project.id %}" class="text-decoration-none fw-bold">
+                                            {{ project.name }}
+                                        </a>
+                                        {% if project.description %}
+                                            <br><small class="text-muted">{{ project.description|truncatechars:50 }}</small>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <a href="{% url 'client_detail' project.client.id %}" class="text-decoration-none">
+                                            {{ project.client.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if project.status == 'completed' %}success{% elif project.status == 'in_progress' %}warning{% elif project.status == 'planning' %}info{% else %}secondary{% endif %}">
+                                            {{ project.get_status_display }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-primary">{{ project.folder_structure_count }}</span>
+                                    </td>
+                                    <td>{{ project.updated_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'project_detail' project.id %}" 
+                                               class="btn btn-outline-primary"
+                                               data-bs-toggle="tooltip" 
+                                               title="View Details">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'project_edit' project.id %}" 
+                                               class="btn btn-outline-secondary"
+                                               data-bs-toggle="tooltip" 
+                                               title="Edit Project">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'folder_structure_create' project.id %}" 
+                                               class="btn btn-outline-success"
+                                               data-bs-toggle="tooltip" 
+                                               title="Create Structure">
+                                                <i class="fas fa-folder-plus"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- Pagination -->
+                    {% if page_obj.has_other_pages %}
+                        <nav aria-label="Projects pagination">
+                            <ul class="pagination justify-content-center">
+                                {% if page_obj.has_previous %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page=1{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">First</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">Previous</a>
+                                    </li>
+                                {% endif %}
+
+                                <li class="page-item active">
+                                    <span class="page-link">
+                                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                                    </span>
+                                </li>
+
+                                {% if page_obj.has_next %}
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.next_page_number }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">Next</a>
+                                    </li>
+                                    <li class="page-item">
+                                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}{% if search_query %}&search={{ search_query }}{% endif %}{% if status_filter %}&status={{ status_filter }}{% endif %}{% if client_filter %}&client={{ client_filter }}{% endif %}">Last</a>
+                                    </li>
+                                {% endif %}
+                            </ul>
+                        </nav>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-project-diagram fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No projects found</h5>
+                        {% if search_query or status_filter or client_filter %}
+                            <p class="text-muted">No projects match your search criteria.</p>
+                            <a href="{% url 'project_list' %}" class="btn btn-outline-primary">
+                                <i class="fas fa-times me-1"></i>Clear Filters
+                            </a>
+                        {% else %}
+                            <p class="text-muted">Create your first project to get started!</p>
+                            <a href="{% url 'project_create' %}" class="btn btn-success">
+                                <i class="fas fa-plus me-1"></i>Create Project
+                            </a>
+                        {% endif %}
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

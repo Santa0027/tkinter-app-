@@ -1,0 +1,154 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if project %}Edit Project{% else %}New Project{% endif %} - Folder Structure Manager{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-{% if project %}edit{% else %}plus{% endif %} me-2"></i>
+                    {% if project %}Edit Project{% else %}New Project{% endif %}
+                </h5>
+            </div>
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">
+                                    <i class="fas fa-project-diagram me-1"></i>Project Name <span class="text-danger">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="name" 
+                                       name="name" 
+                                       value="{% if project %}{{ project.name }}{% endif %}"
+                                       placeholder="Enter project name"
+                                       required>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="client_id" class="form-label">
+                                    <i class="fas fa-user me-1"></i>Client <span class="text-danger">*</span>
+                                </label>
+                                <select class="form-select" id="client_id" name="client_id" required>
+                                    <option value="">Select a client</option>
+                                    {% for client in clients %}
+                                        <option value="{{ client.id }}" 
+                                                {% if project and project.client.id == client.id %}selected{% endif %}
+                                                {% if request.GET.client == client.id|stringformat:"s" %}selected{% endif %}>
+                                            {{ client.name }}
+                                        </option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">
+                            <i class="fas fa-align-left me-1"></i>Description
+                        </label>
+                        <textarea class="form-control" 
+                                  id="description" 
+                                  name="description" 
+                                  rows="3"
+                                  placeholder="Enter project description">{% if project %}{{ project.description }}{% endif %}</textarea>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="status" class="form-label">
+                                    <i class="fas fa-flag me-1"></i>Status
+                                </label>
+                                <select class="form-select" id="status" name="status">
+                                    <option value="planning" {% if not project or project.status == 'planning' %}selected{% endif %}>Planning</option>
+                                    <option value="in_progress" {% if project and project.status == 'in_progress' %}selected{% endif %}>In Progress</option>
+                                    <option value="completed" {% if project and project.status == 'completed' %}selected{% endif %}>Completed</option>
+                                    <option value="on_hold" {% if project and project.status == 'on_hold' %}selected{% endif %}>On Hold</option>
+                                    <option value="cancelled" {% if project and project.status == 'cancelled' %}selected{% endif %}>Cancelled</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="save_location" class="form-label">
+                                    <i class="fas fa-folder me-1"></i>Save Location
+                                </label>
+                                <input type="text" 
+                                       class="form-control" 
+                                       id="save_location" 
+                                       name="save_location" 
+                                       value="{% if project %}{{ project.save_location }}{% else %}\\192.168.29.136\EFX_Projects\clients{% endif %}"
+                                       placeholder="Enter save location path">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="start_date" class="form-label">
+                                    <i class="fas fa-calendar-alt me-1"></i>Start Date
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="start_date" 
+                                       name="start_date" 
+                                       value="{% if project and project.start_date %}{{ project.start_date|date:'Y-m-d' }}{% endif %}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="end_date" class="form-label">
+                                    <i class="fas fa-calendar-check me-1"></i>End Date
+                                </label>
+                                <input type="date" 
+                                       class="form-control" 
+                                       id="end_date" 
+                                       name="end_date" 
+                                       value="{% if project and project.end_date %}{{ project.end_date|date:'Y-m-d' }}{% endif %}">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-4">
+                            <div class="mb-3">
+                                <label for="budget" class="form-label">
+                                    <i class="fas fa-dollar-sign me-1"></i>Budget
+                                </label>
+                                <input type="number" 
+                                       class="form-control" 
+                                       id="budget" 
+                                       name="budget" 
+                                       step="0.01"
+                                       value="{% if project and project.budget %}{{ project.budget }}{% endif %}"
+                                       placeholder="0.00">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <a href="{% if project %}{% url 'project_detail' project.id %}{% else %}{% url 'project_list' %}{% endif %}" 
+                           class="btn btn-secondary">
+                            <i class="fas fa-times me-1"></i>Cancel
+                        </a>
+                        <button type="submit" class="btn btn-{% if project %}warning{% else %}success{% endif %}">
+                            <i class="fas fa-{% if project %}save{% else %}plus{% endif %} me-1"></i>
+                            {% if project %}Update Project{% else %}Create Project{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

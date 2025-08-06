@@ -1,0 +1,211 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ project.name }} - Folder Structure Manager{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0"><i class="fas fa-project-diagram me-2"></i>{{ project.name }}</h5>
+                <div>
+                    <a href="{% url 'project_edit' project.id %}" class="btn btn-outline-warning btn-sm">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <a href="{% url 'folder_structure_create' project.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>New Structure
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Client</label>
+                            <p class="fw-bold">
+                                <a href="{% url 'client_detail' project.client.id %}" class="text-decoration-none">
+                                    {{ project.client.name }}
+                                </a>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Status</label>
+                            <p>
+                                <span class="badge bg-{% if project.status == 'completed' %}success{% elif project.status == 'in_progress' %}warning{% elif project.status == 'planning' %}info{% else %}secondary{% endif %} fs-6">
+                                    {{ project.get_status_display }}
+                                </span>
+                            </p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Save Location</label>
+                            <p class="fw-bold font-monospace">{{ project.save_location }}</p>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Created</label>
+                            <p class="fw-bold">{{ project.created_at|date:"F d, Y g:i A" }}</p>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Last Updated</label>
+                            <p class="fw-bold">{{ project.updated_at|date:"F d, Y g:i A" }}</p>
+                        </div>
+                        {% if project.budget %}
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Budget</label>
+                            <p class="fw-bold">${{ project.budget }}</p>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                {% if project.description %}
+                <div class="mb-3">
+                    <label class="form-label text-muted">Description</label>
+                    <p class="fw-bold">{{ project.description|linebreaks }}</p>
+                </div>
+                {% endif %}
+                
+                {% if project.start_date or project.end_date %}
+                <div class="row">
+                    {% if project.start_date %}
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">Start Date</label>
+                            <p class="fw-bold">{{ project.start_date|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                    {% if project.end_date %}
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label text-muted">End Date</label>
+                            <p class="fw-bold">{{ project.end_date|date:"F d, Y" }}</p>
+                        </div>
+                    </div>
+                    {% endif %}
+                </div>
+                {% endif %}
+                
+                <div class="mb-3">
+                    <label class="form-label text-muted">Full Project Path</label>
+                    <p class="fw-bold font-monospace">{{ project.full_project_path }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="fas fa-chart-bar me-2"></i>Statistics</h6>
+            </div>
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                    <span>Folder Structures</span>
+                    <span class="badge bg-primary fs-6">{{ folder_structures.count }}</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Folder Structures Section -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h6 class="mb-0"><i class="fas fa-folder-tree me-2"></i>Folder Structures</h6>
+                <div>
+                    <a href="{% url 'import_structure_json' project.id %}" class="btn btn-outline-info btn-sm me-2">
+                        <i class="fas fa-upload me-1"></i>Import
+                    </a>
+                    <a href="{% url 'folder_structure_create' project.id %}" class="btn btn-success btn-sm">
+                        <i class="fas fa-plus me-1"></i>New Structure
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                {% if folder_structures %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Structure Name</th>
+                                    <th>Template</th>
+                                    <th>Status</th>
+                                    <th>Last Updated</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for structure in folder_structures %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'folder_structure_detail' project.id structure.id %}" class="text-decoration-none fw-bold">
+                                            {{ structure.name }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {% if structure.predefined_structure %}
+                                            <span class="badge bg-info">{{ structure.predefined_structure.name }}</span>
+                                        {% else %}
+                                            <span class="text-muted">Custom</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if structure.is_created %}
+                                            <span class="badge bg-success">Created</span>
+                                        {% else %}
+                                            <span class="badge bg-warning">Not Created</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ structure.updated_at|date:"M d, Y" }}</td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a href="{% url 'folder_structure_detail' project.id structure.id %}" 
+                                               class="btn btn-outline-primary"
+                                               data-bs-toggle="tooltip" 
+                                               title="View Structure">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a href="{% url 'folder_structure_edit' project.id structure.id %}" 
+                                               class="btn btn-outline-secondary"
+                                               data-bs-toggle="tooltip" 
+                                               title="Edit Structure">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a href="{% url 'duplicate_structure' project.id structure.id %}" 
+                                               class="btn btn-outline-info"
+                                               data-bs-toggle="tooltip" 
+                                               title="Duplicate Structure">
+                                                <i class="fas fa-copy"></i>
+                                            </a>
+                                            <a href="{% url 'download_structure_zip' project.id structure.id %}" 
+                                               class="btn btn-outline-success"
+                                               data-bs-toggle="tooltip" 
+                                               title="Download ZIP">
+                                                <i class="fas fa-download"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center py-4">
+                        <i class="fas fa-folder-tree fa-3x text-muted mb-3"></i>
+                        <h6 class="text-muted">No folder structures yet</h6>
+                        <p class="text-muted">Create the first folder structure for this project!</p>
+                        <a href="{% url 'folder_structure_create' project.id %}" class="btn btn-success">
+                            <i class="fas fa-plus me-1"></i>Create Structure
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
